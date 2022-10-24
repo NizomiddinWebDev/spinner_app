@@ -1,6 +1,8 @@
-import { useState } from "react";
-
+import { useState,useEffect,useRef } from "react";
+import { ToastContainer, toast } from 'react-toastify';
+  import 'react-toastify/dist/ReactToastify.css';
 function App() {
+  const notify = (args) => toast(`${args} 0 dan kichik bo'la olmaydi!!!`);
   const [vaqt, setVaqt] = useState(0);
   const [timer, setTimer] = useState(0);
   const [radius, setRadius] = useState(0);
@@ -11,27 +13,40 @@ function App() {
   const [orttezlik, setOrttezlik] = useState(0);
   const [burtezlik, setBurtezlik] = useState(0);
   const [ayltezlik, setAyltezlik] = useState(0);
-
+  const counterRef = useRef(null);
 
   const handleChangeVaqt = (event) => {
-    setVaqt(event.target.value);
-    setTimer(event.target.value);
+    if (event.target.value<0) {
+      notify("Vaqt")
+    }else{
+      setVaqt(event.target.value);
+      setTimer(event.target.value);
+    }
+    
   };
 
   const handleChangeRadius = (event) => {
-    setRadius(event.target.value);
+    if (event.target.value<0) {
+      notify("Radius")
+    }else{
+      setRadius(event.target.value);
+    }
   };
 
   const handleChangeTezlik = (event) => {
-    setTezlik(event.target.value);
+    if (event.target.value<0) {
+      notify("Tezlik")
+    }else{
+      setTezlik(event.target.value);
+    }
   };
   
 
   function Started() {
-    if (!vaqt && !tezlik) {
+    if (!vaqt && !tezlik || start) {
       return;
     }
-    const myInt = setInterval(() => {
+    counterRef.current = setInterval(() => {
       setTimer((prev) => prev - 1);
     }, 1000);
     setStart(true);
@@ -43,17 +58,22 @@ function App() {
     setOrttezlik(v);
     let w = 2 * Math.PI * f;
     setBurtezlik(w);
-    setTimeout(() => {
-      setVaqt(0);
-      setStart(false);
-      clearInterval(myInt);
-    }, vaqt * 1000);
   }
   const Stoped =()=>{
-    setVaqt(0)
+    setStart(false);
+    setVaqt(prev=>prev)
+    clearInterval(counterRef.current);
   }
+  useEffect(() => {
+    if (timer==0) {
+      clearInterval(counterRef.current);
+      setStart(false);
+      setVaqt(0)
+    }
+  }, [timer]);
   return (
     <div className="xl:flex xl:justify-between xl:my-12 xl:mx-12 overflow-x-hidden ">
+      <ToastContainer />
       <div
         className="xl:py-20 xl:w-[60%] xl:h-[100%] border-[1px] xl:border-r-0 border-black relative
         flex justify-center items-center rounded-tr-lg xl:rounded-tr-none rounded-tl-lg xl:rounded-bl-lg"
@@ -109,6 +129,7 @@ function App() {
               className="ml-[3.4rem] pl-4 rounded-sm w-28"
               onChange={handleChangeRadius}
               required
+              value={radius}
             />{" "}
             sm
             <br /> <br />
@@ -119,6 +140,7 @@ function App() {
               className="ml-[2.75rem] pl-4 rounded-sm w-28"
               onChange={handleChangeTezlik}
               required
+              value={tezlik}
             />
             <br />
             <br />
@@ -126,7 +148,7 @@ function App() {
               type="submit"
               className="border-2 py-1 px-12 ml-[6.3rem] rounded-lg text-white text-xl bg-green-400"
               onClick={() => {
-                Started();
+                Started()
               }}
             >
               Start
@@ -143,7 +165,7 @@ function App() {
           </div>
         </div>
         <div>
-          {vaqt < 1 ? (
+          {vaqt < 1 && !start ? (
             <div className="text-left pl-12 ">
               <div className="pt-[3.5rem]">
                 Davr: <span className="pl-[5.5rem]">{davr} sekund.</span>
